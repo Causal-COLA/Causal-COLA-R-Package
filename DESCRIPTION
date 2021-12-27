@@ -2,7 +2,7 @@ Package: causal_COLA
 Title: A collaborative causal inference package for randonmized studies
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Mengtong", "Hu", , "mengtong@umich.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 Imports: ggplot2,
