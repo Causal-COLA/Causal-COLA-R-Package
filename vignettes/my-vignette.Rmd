@@ -1,0 +1,184 @@
+---
+title: "causalCOLA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+This is a tutorial for the casual-COLA platform. The causal-COLA platform consists
+of two parts :
+
+1.  Interactive Interface: a website that serves as secure data-hub for data transmissions between sites.
+<https://github.com/Causal-COLA/Causal-COLA-FrontEnd>
+1.  R package causalCOLA: a r package that allows users from different sites to run the analysis on their local computers.
+
+The tutorial illustrates how to conduct a two-round causal-COLA analysis by working through a simulated example involving four hospitals.
+
+## generateData(): simulate datasets
+Change your directory to where you want to save the simulated datasets. The simulated datasets are saved into five separate folders `hospital1`,`hospital2`,`hospital3`, and `hospital4` to mimic the scenario that each local sites store data at their own facilities.
+Each dataset includes vectors of incidents(Y), treatment status(A) and covariates(X). To simplify the rest of the demonstration, the `generateData()` method will also save the dataset as a list of local datasets through the r object `hospital_data` which is automatically saved in the current environment.
+```{r setup}
+#library(myfirstpackage)
+knitr::opts_knit$set(root.dir ="/Users/humengtong/Dropbox (University of Michigan)/from_box/Summer2020/Rpackages/myfirstpackage")
+```
+
+```{r, echo = FALSE}
+
+hospital_data =generateData()
+```
+## Update_beta(): First round of communication for propensity score estimates update:
+We use b to denote the site that we currently have access to. 
+### At hospital 1:
+When b = 1 which is the starting site, we can initialize a betahat and a sum2
+
+```{r}
+tempdatadir = getwd()
+b = 1
+# Load Data so X is supposed to be a covariates vector and y is supposed to be the treatment vector
+    X<-y<-A<-NULL;
+    load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 1 specifies the number of covariates p. Here we use 5.
+    p = dim(X)[2]+1
+#Initialize betehat using an empty vector or some other initial value init
+    betahat = rep(0,p) 
+#Initialize sum2
+    sum2<-diag(0,p,p)
+    output= Update_beta(X,A,betahat,sum2,"binomial")
+# The intermediate output from site 1 in round 1 invovles beta coefficient estimates and Hessian matrices
+    print(output)
+```
+
+Once site 1 finishes analysis, site 1 will upload the results to the Interactive Interface using the pre-assgined username and password. The second hospital will log onto the Interactive Interface using its assigned username and password and download the output uploaded by hospital 1 and proceed the analysis.
+
+Here we directly save the local result from hospital 1 into the local folder `/Simdata/hospital2` where the raw data of hospital 2 are stored.
+```{r}    
+#Site 1 finishes analysis and save the results into where the second hospital has access to
+    save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r1.RData", sep=""))
+    
+#Analysis Start from site 2
+    b=2
+#Site 2 loads output results from site 1
+    load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r1.RData", sep=""))
+#Site 2 prepares its local data
+    X<-y<-A<-NULL;
+    load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 2 updates statistics
+    betahat = output[[1]]
+    sum2 = output[[2]]
+    output= Update_beta(X,y,betahat,sum2,"binomial")
+#Site 2 finishes analysis and save the results in the designated directory
+    save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r1.RData", sep=""))
+```
+Now Site 2 has turn the updated results over to site 3 who also updates the results.
+```{r}
+#Analysis Start from site 3
+    b=3
+#Site 3 loads output results from site 1
+  load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r1.RData", sep=""))
+#Site 3 prepares its local data
+  X<-y<-A<-NULL;
+  load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 3 updates statistics
+  betahat = output[[1]]
+  sum2 = output[[2]]
+  output= Update_beta(X,y,betahat,sum2,"binomial")
+#Site 3 finishes analysis and save the results in the Site 4 directory
+   save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r1.RData", sep=""))   
+```
+Site 4 receives data from site 3 and finishes the first round update #Site 4 completes first-round update (PS). The output from Site 4 will be uploaded to the interactive interface where Site 1 has access to download. Here, we save the output results from Site 4 to the into the local folder `/Simdata/hospital1` 
+```{r}
+  load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r1.RData", sep=""))
+   X<-y<-A<-NULL;
+  load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+  betahat = output[[1]]
+  sum2 = output[[2]]
+  output= Update_beta(X,y,betahat,sum2,"binomial")
+  save(output, file = paste(tempdatadir,"/Simdata/hospital",1, "/output_r1.RData", sep=""))     
+  
+  
+```
+## Update_ate(): the second round updates causal log odds ratio of the treatment and the variance for the casual log odds ratio
+### Starting again at hospital 1:
+Read in the output data from hospital 4 and hospital 1's own raw data.
+```{r}
+b = 1
+
+load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r1.RData", sep=""))
+betahat = output[[1]]
+X<-y<-A<-NULL;
+load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+```
+
+`Update_ate()` is the function that update causal odds ratio as well as the inferences matrices. 
+There are eight inputs needed for the `Update_ate()` function. 
+
+1. The first input is betahat which corresponds
+to the estimated propensity score estimates. 
+1. The second to fourth arguments correspond to the data. 
+1. The fifth to
+eighth arguments correspond to the intermediate quantities used in calculating the log odds ratio.
+1. The last argument "lastsite" is optional and is default to be "FALSE". When the last site which is hospital 4in our example, does the final update, the "lastsite" will be TRUE.
+```{r}
+y_treated_sum=0;y_control_sum = 0 ; n_treated =0; n_control= 0 
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))     
+
+
+#Analysis continue at site 2
+b=2
+#Site 2 loads output results from site 1
+load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r2.RData", sep=""))
+#Site 2 prepares its local data
+X<-y<-A<-NULL;
+load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 2 updates statistics. The outputs from site 1 are used as input for `Update_ate()`.
+betahat = output$beta_ps
+y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+#Site 2 finishes analysis and save the results in the designated directory
+save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
+
+```
+
+```{r}
+#Analysis continue at site 3
+b=3
+#Site 3 loads output results from site 2
+load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r2.RData", sep=""))
+#Site 3 prepares its local data
+X<-y<-A<-NULL;
+load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 3 updates statistics. The outputs from site 2 are used as input for `Update_ate()`.
+betahat = output$beta_ps
+y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+#Site 3 finishes analysis and save the results in the designated directory
+save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
+```
+### Hospital 4 finishes the second round of updates and output causal log odds ratio and its inference matrices, and output the final updates to all sites:
+When we update causal log odds ratio at hospital 4, we need to make sure that we pass in "lastsite = TRUE" in `Update_ate`
+```{r}
+b=4
+#Site 4 loads output results from site 3
+load(paste(tempdatadir,"/Simdata/hospital",b, "/output_r2.RData", sep=""))
+#Site 4 prepares its local data
+X<-y<-A<-NULL;
+load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
+#Site 4 updates statistics. The outputs from site 3 are used as input for `Update_ate()`.
+betahat = output$beta_ps
+y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,TRUE)
+#Site 4 finishes analysis and save the results in the designated directory where every group will have access to.
+b=solve(bread)
+return(c("ATE"=ATE_ps123_av,"var"=(b%*%meat%*%t(b))[dim(b)[1],dim(b)[2]],"ATE_ps123_av_b1"=ATE_ps123_av_b1))
+save(output, file = paste(tempdatadir,"/Simdata/hospital",b, "/finalouput.RData", sep=""))
+```
+
