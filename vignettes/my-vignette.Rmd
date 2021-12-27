@@ -1,6 +1,13 @@
 ---
 title: "causalCOLA"
-output: rmarkdown::html_vignette
+author : Mengtong Hu
+date: 2021-12-27
+output: 
+  rmarkdown::html_vignette:
+     number_sections: true
+     toc: true # table of content true
+
+
 vignette: >
   %\VignetteIndexEntry{my-vignette}
   %\VignetteEngine{knitr::rmarkdown}
@@ -12,6 +19,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+knitr::opts_knit$set(root.dir ="/Users/humengtong/Dropbox (University of Michigan)/from_box/Summer2020/Rpackages/causal_COLA")
+
 ```
 This is a tutorial for the casual-COLA platform. The causal-COLA platform consists
 of two parts :
@@ -22,23 +31,22 @@ of two parts :
 
 The tutorial illustrates how to conduct a two-round causal-COLA analysis by working through a simulated example involving four hospitals.
 
-## generateData(): simulate datasets
+# generateData(): simulate datasets
 Change your directory to where you want to save the simulated datasets. The simulated datasets are saved into five separate folders `hospital1`,`hospital2`,`hospital3`, and `hospital4` to mimic the scenario that each local sites store data at their own facilities.
 Each dataset includes vectors of incidents(Y), treatment status(A) and covariates(X). To simplify the rest of the demonstration, the `generateData()` method will also save the dataset as a list of local datasets through the r object `hospital_data` which is automatically saved in the current environment.
 ```{r setup}
 
 devtools::install_github("https://github.com/Causal-COLA/Causal-COLA-R-Package")
 library(causalCOLA)
-knitr::opts_knit$set(root.dir ="/Users/humengtong/Dropbox (University of Michigan)/from_box/Summer2020/Rpackages/causal_COLA")
 ```
 
 ```{r, echo = FALSE}
 
 hospital_data =generateData()
 ```
-## Update_beta(): First round of communication for propensity score estimates update:
+# Update_beta(): First round of communication for propensity score estimates update:
 We use b to denote the site that we currently have access to. 
-### At hospital 1:
+## At hospital 1:
 When b = 1 which is the starting site, we can initialize a betahat and a sum2
 
 ```{r}
@@ -107,8 +115,8 @@ Site 4 receives data from site 3 and finishes the first round update #Site 4 com
   
   
 ```
-## Update_ate(): the second round updates causal log odds ratio of the treatment and the variance for the casual log odds ratio
-### Starting again at hospital 1:
+# Update_ate(): the second round updates causal log odds ratio of the treatment and the variance for the casual log odds ratio
+## Starting again at hospital 1:
 Read in the output data from hospital 4 and hospital 1's own raw data.
 ```{r}
 b = 1
@@ -167,7 +175,7 @@ output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_contro
 #Site 3 finishes analysis and save the results in the designated directory
 save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
 ```
-### Hospital 4 finishes the second round of updates and output causal log odds ratio and its inference matrices, and output the final updates to all sites:
+## Hospital 4 finishes the second round of updates and output causal log odds ratio and its inference matrices, and output the final updates to all sites:
 When we update causal log odds ratio at hospital 4, we need to make sure that we pass in "lastsite = TRUE" in `Update_ate`
 ```{r}
 b=4
