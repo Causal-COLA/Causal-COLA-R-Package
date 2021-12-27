@@ -152,7 +152,7 @@ getLocalodds.plot<-function(){
 #' 
 #' @examples
 #' Update_beta(X,y, betahat, sum2,type)
-Update_beta = function(X,y,betahat,sum2,type = ){
+Update_beta = function(X,y,betahat,sum2,type ="binomial" ){
   tol=1e-6;
   max_iter=100;
   X<-as.matrix(cbind(1,X))
