@@ -26,9 +26,10 @@ The tutorial illustrates how to conduct a two-round causal-COLA analysis by work
 Change your directory to where you want to save the simulated datasets. The simulated datasets are saved into five separate folders `hospital1`,`hospital2`,`hospital3`, and `hospital4` to mimic the scenario that each local sites store data at their own facilities.
 Each dataset includes vectors of incidents(Y), treatment status(A) and covariates(X). To simplify the rest of the demonstration, the `generateData()` method will also save the dataset as a list of local datasets through the r object `hospital_data` which is automatically saved in the current environment.
 ```{r setup}
-library(myfirstpackage)
+
 devtools::install_github("https://github.com/Causal-COLA/Causal-COLA-R-Package")
-knitr::opts_knit$set(root.dir ="/Users/humengtong/Dropbox (University of Michigan)/from_box/Summer2020/Rpackages/myfirstpackage")
+library(causalCOLA)
+knitr::opts_knit$set(root.dir ="/Users/humengtong/Dropbox (University of Michigan)/from_box/Summer2020/Rpackages/causal_COLA")
 ```
 
 ```{r, echo = FALSE}

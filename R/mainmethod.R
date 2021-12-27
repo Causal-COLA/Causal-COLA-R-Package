@@ -10,8 +10,8 @@
 #'
 #' @export
 #' 
-#' @examples
-#' generateData()
+#' @examples generateData()
+#' 
 generateData <-function(){
           filepath = getwd()
           tempdatadir = paste0(filepath,"/Simdata")
@@ -183,7 +183,27 @@ Update_beta = function(X,y,betahat,sum2,type ="binomial" ){
   return(list(betahat, sum2))
 }
 
-
+#' Update causal log odds ratio estimates
+#' 
+#' This function updates estimates for the collaborative causal log odds ratio and its variance.
+#' @param beta causal log odds ratio from the previous site
+#' @param A_all local treatment assignment 
+#' @param X local covariates data.
+#' @param y local outcome data.
+#' @param y_treated_sum
+#' @param y_control_sum
+#' @param n_treated 
+#' @param n_control 
+#' @param lastsite defult is false which indicates whether the current site is the \code{lastsite}
+#' @return a vector of intermediate quantites that will be passed down to the next site when \code{lastsite} is FALSE;
+#' a vector of causal log odds ratio and its variance when \code{lastsite} is TRUE
+#'
+#' @keywords Second round ATE update
+#'
+#' @export
+#' 
+#' @examples
+#' Update_ate(beta,A_all,y,X,y_treated_sum,y_control_sum,n_treated,n_control,TRUE)
 Update_ate<-function(beta,A_all,y,X,y_treated_sum,y_control_sum,n_treated,n_control,lastsite = FALSE ){
   ps123_S=1/(exp(-as.matrix(cbind(1,X))%*%beta)+1)
   w_ps123_S=IPW(ps123_S,A_all)
