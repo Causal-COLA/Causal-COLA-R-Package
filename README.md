@@ -9,7 +9,7 @@ Causal-COLA is a collaborative platform for institutions to make causal inferenc
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/Causal-COLA/Causal-COLA-FrontEnd/blob/master/CONTRIBUTING.md) for submitting pull requests.
+Please read [CONTRIBUTING.md](https://github.com/Causal-COLA/Causal-COLA-R-Package/blob/master/CONTRIBUTING.md) for submitting pull requests.
 Please contact the project owners if you wish to contribute, or having additional questions.
 
 
