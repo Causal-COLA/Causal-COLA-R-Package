@@ -1,4 +1,4 @@
-Package: causal_COLA
+Package: causalCOLA
 Title: A collaborative causal inference package for randonmized studies
 Version: 0.0.0.9000
 Authors@R: 
