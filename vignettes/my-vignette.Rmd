@@ -129,8 +129,8 @@ to the estimated propensity score estimates.
 eighth arguments correspond to the intermediate quantities used in calculating the log odds ratio.
 1. The last argument "lastsite" is optional and is default to be "FALSE". When the last site which is hospital 4in our example, does the final update, the "lastsite" will be TRUE.
 ```{r}
-y_treated_sum=0;y_control_sum = 0 ; n_treated =0; n_control= 0 
-output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+y_treated_sum=0;y_control_sum = 0 ; n_treated =0; n_control= 0; meat = 0; bread =0
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,meat,bread)
 save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))     
 
 
@@ -144,7 +144,8 @@ load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
 #Site 2 updates statistics. The outputs from site 1 are used as input for `Update_ate()`.
 betahat = output$beta_ps
 y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
-output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+meat = output$meat; bread =output$bread
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,meat,bread)
 #Site 2 finishes analysis and save the results in the designated directory
 save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
 
@@ -161,7 +162,8 @@ load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
 #Site 3 updates statistics. The outputs from site 2 are used as input for `Update_ate()`.
 betahat = output$beta_ps
 y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
-output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control)
+meat = output$meat; bread =output$bread
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,meat,bread)
 #Site 3 finishes analysis and save the results in the designated directory
 save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
 ```
@@ -177,10 +179,10 @@ load(paste(tempdatadir,"/Simdata/hospital",b,"/Simdata.RData",sep=""))
 #Site 4 updates statistics. The outputs from site 3 are used as input for `Update_ate()`.
 betahat = output$beta_ps
 y_treated_sum =output$y_treated_sum; y_control_sum=output$y_control_sum; n_treated = output$n_treated;n_control = output$n_control
-output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,TRUE)
+meat = output$meat; bread =output$bread
+output = Update_ate(betahat,A,y,X,y_treated_sum,y_control_sum,n_treated,n_control,meat,bread,TRUE)
 #Site 4 finishes analysis and save the results in the designated directory where every group will have access to.
-b=solve(bread)
-return(c("ATE"=ATE_ps123_av,"var"=(b%*%meat%*%t(b))[dim(b)[1],dim(b)[2]],"ATE_ps123_av_b1"=ATE_ps123_av_b1))
+print(output)
 save(output, file = paste(tempdatadir,"/Simdata/hospital",b, "/finalouput.RData", sep=""))
 ```
 

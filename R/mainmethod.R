@@ -204,7 +204,7 @@ Update_beta = function(X,y,betahat,sum2,type ="binomial" ){
 #' 
 #' @examples
 #' Update_ate(beta,A_all,y,X,y_treated_sum,y_control_sum,n_treated,n_control,TRUE)
-Update_ate<-function(beta,A_all,y,X,y_treated_sum,y_control_sum,n_treated,n_control,lastsite = FALSE ){
+Update_ate<-function(beta,A_all,y,X,y_treated_sum,y_control_sum,n_treated,n_control,meat,bread,lastsite = FALSE ){
   ps123_S=1/(exp(-as.matrix(cbind(1,X))%*%beta)+1)
   w_ps123_S=IPW(ps123_S,A_all)
   y=y*w_ps123_S
