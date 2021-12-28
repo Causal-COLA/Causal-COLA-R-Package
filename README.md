@@ -1,5 +1,4 @@
 
-
 causalCOLA
 ==========
 
@@ -19,26 +18,28 @@ The causal-COLA platform consists of two parts :
 
 1.  Interactive Interface: a website that serves as secure data-hub for data transmissions between sites. [https://github.com/Causal-COLA/Causal-COLA-FrontEnd](https://github.com/Causal-COLA/Causal-COLA-FrontEnd)
 2.  R package causalCOLA: a r package that allows users from different sites to run the analysis on their local computers. Built With
-* [R](https://www.r-project.org/) 
+   [R](https://www.r-project.org/) 
 
-The tutorial illustrates how to conduct a two-round causal-COLA analysis by working through a simulated example involving four hospitals.
+The tutorial illustrates how to conduct a two-round causal-COLA analysis by walking you through a simulated example
+involving four hypothetical hospitals.
 
 ## generateData(): simulate datasets
-===================================
 
-Change your directory to where you want to save the simulated datasets. The simulated datasets are saved into five separate folders `hospital1`,`hospital2`,`hospital3`, and `hospital4` to mimic the scenario that each local sites store data at their own facilities. Each dataset includes vectors of incidents(Y), treatment status(A) and covariates(X). To simplify the rest of the demonstration, the `generateData()` method will also save the dataset as a list of local datasets through the r object `hospital_data` which is automatically saved in the current environment.
+
+ In a real-world application, each hospital only needs to store their data in their local facility. In this demosntration, we saved each hospital's datasets into separate folders. To begin simulating the datasets, first change your directory to where you want to save the simulated datasets using `setwd()`. The simulated datasets are saved into four separate folders `/Simdata/hospital1`,`/Simdata/hospital2`,`/Simdata/hospital3`, and `/Simdata/hospital4` to mimic the scenario where each local sites stores data at their own facilities. Each dataset includes vectors of incidents(Y), treatment status(A) and covariates(X). 
+The `generateData()` method will also save the dataset as a list of local datasets through the r object `hospital_data` which is automatically saved in the current environment.
 
 ``` r   
     devtools::install_github("https://github.com/Causal-COLA/Causal-COLA-R-Package")
-    #> Skipping install of 'causalCOLA' from a github remote, the SHA1 (2bfa6bbd) has not changed since last install.
-    #>   Use `force = TRUE` to force installation
     library(causalCOLA)
+    generateData()
 ```
-
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Update\_beta(): First round of communication for propensity score estimates update:
-=====================================================================================
 
-We use b to denote the site that we currently have access to. ## At hospital 1: When b = 1 which is the starting site, we can initialize a betahat and a sum2
+We use `b` to denote the site that we currently have access to. 
+### At hospital 1: 
+When b = 1 which is the starting site, we can initialize a betahat and a sum2(usually 0).
 ```r
     tempdatadir = getwd()
     b = 1
@@ -72,7 +73,7 @@ We use b to denote the site that we currently have access to. ## At hospital 1: 
     #> X4_all 22.19748 20.52154 11.824127 29.24566 43.76209 13.113792
     #> X5_all 13.06487 14.43783  7.732463 14.69100 13.11379 13.064873
 ```
-Once site 1 finishes analysis, site 1 will upload the results to the Interactive Interface using the pre-assgined username and password. The second hospital will log onto the Interactive Interface using its assigned username and password and download the output uploaded by hospital 1 and proceed the analysis.
+Once site 1 finishes analysis, if we were to use the Interactive Interface, site 1 will would upload the results to its homepage using the pre-assgined username and password. The second hospital will log onto the Interactive Interface using its assigned username and password and download the output uploaded by hospital 1 and proceed the analysis.
 
 Here we directly save the local result from hospital 1 into the local folder `/Simdata/hospital2` where the raw data of hospital 2 are stored.
 ```r
@@ -120,12 +121,12 @@ Site 4 receives data from site 3 and finishes the first round update #Site 4 com
       save(output, file = paste(tempdatadir,"/Simdata/hospital",1, "/output_r1.RData", sep=""))     
  ```     
       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Update\_ate(): the second round updates causal log odds ratio of the treatment and the variance for the casual log odds ratio
-===============================================================================================================================
 
 ### Starting again at hospital 1:
----------------------------------
+
 
 Read in the output data from hospital 4 and hospital 1’s own raw data.
 ```r
@@ -178,8 +179,9 @@ Read in the output data from hospital 4 and hospital 1’s own raw data.
     #Site 3 finishes analysis and save the results in the designated directory
     save(output, file = paste(tempdatadir,"/Simdata/hospital",b+1, "/output_r2.RData", sep=""))
 ```
-### Hospital 4 finishes the second round of updates and output causal log odds ratio and its inference matrices, and output the final updates to all sites:
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Hospital 4 finishes the second round of updates and output causal log odds ratio and its inference matrices, and output the final updates to all sites:
 
 When we update causal log odds ratio at hospital 4, we need to make sure that we pass in “lastsite = TRUE” in `Update_ate`
 ```r
@@ -200,3 +202,4 @@ When we update causal log odds ratio at hospital 4, we need to make sure that we
     #> 0.08776381 0.88152685
     save(output, file = paste(tempdatadir,"/Simdata/hospital",b, "/finalouput.RData", sep=""))
 ```
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
