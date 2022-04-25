@@ -203,3 +203,4 @@ When we update causal log odds ratio at hospital 4, we need to make sure that we
     save(output, file = paste(tempdatadir,"/Simdata/hospital",b, "/finalouput.RData", sep=""))
 ```
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
+Please see [AUTHORS](https://github.com/Causal-COLA/Causal-COLA-R-Package/blob/master/AUTHORS) for a list of contributors for this package.
